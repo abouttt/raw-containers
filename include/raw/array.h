@@ -302,12 +302,12 @@ struct array
 
 	// ---------- Operations ---------- //
 
-	constexpr void fill(const T& value)
+	constexpr void fill(const value_type& value)
 	{
 		std::fill_n(elems, N, value);
 	}
 
-	constexpr void swap(array& other) noexcept(std::is_nothrow_swappable_v<T>)
+	constexpr void swap(array& other) noexcept(std::is_nothrow_swappable_v<value_type>)
 	{
 		if (this != std::addressof(other))
 		{
@@ -479,7 +479,7 @@ struct array<T, 0>
 
 	// ---------- Operations ---------- //
 
-	constexpr void fill(const T& /*value*/)
+	constexpr void fill(const value_type& /*value*/)
 	{
 	}
 
