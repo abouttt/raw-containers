@@ -1034,7 +1034,7 @@ private:
 		change_array(new_begin, count, count);
 	}
 
-	void relocate_n(pointer first, size_type count, pointer dest)
+	void relocate_n(pointer first, size_type count, pointer dest) const
 	{
 		if constexpr (std::is_nothrow_move_constructible_v<value_type> || !std::is_copy_constructible_v<value_type>)
 		{
