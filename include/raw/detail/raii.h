@@ -14,24 +14,24 @@ class memory_guard
 {
 public:
 	memory_guard(T* ptr, std::size_t count) noexcept
-		: _ptr(ptr)
-		, _size(count)
+		: m_ptr(ptr)
+		, m_size(count)
 	{
 	}
 
 	memory_guard(const memory_guard&) = delete;
 
 	memory_guard(memory_guard&& other) noexcept
-		: _ptr(std::exchange(other._ptr, nullptr))
-		, _size(std::exchange(other._size, 0))
+		: m_ptr(std::exchange(other.m_ptr, nullptr))
+		, m_size(std::exchange(other.m_size, 0))
 	{
 	}
 
 	~memory_guard()
 	{
-		if (_ptr)
+		if (m_ptr)
 		{
-			deallocate(_ptr, _size);
+			deallocate(m_ptr, m_size);
 		}
 	}
 
@@ -41,13 +41,13 @@ public:
 	{
 		if (this != std::addressof(other))
 		{
-			if (_ptr)
+			if (m_ptr)
 			{
-				deallocate(_ptr, _size);
+				deallocate(m_ptr, m_size);
 			}
 
-			_ptr = std::exchange(other._ptr, nullptr);
-			_size = std::exchange(other._size, 0);
+			m_ptr = std::exchange(other.m_ptr, nullptr);
+			m_size = std::exchange(other.m_size, 0);
 		}
 
 		return *this;
@@ -55,23 +55,23 @@ public:
 
 	[[nodiscard]] T* get() const noexcept
 	{
-		return _ptr;
+		return m_ptr;
 	}
 
 	[[nodiscard]] std::size_t size() const noexcept
 	{
-		return _size;
+		return m_size;
 	}
 
 	void release() noexcept
 	{
-		_ptr = nullptr;
-		_size = 0;
+		m_ptr = nullptr;
+		m_size = 0;
 	}
 
 private:
-	T* _ptr;
-	std::size_t _size;
+	T* m_ptr;
+	std::size_t m_size;
 };
 
 template <typename T>
@@ -79,24 +79,24 @@ class destroy_guard
 {
 public:
 	destroy_guard(T* first, T* last) noexcept
-		: _begin(first)
-		, _end(last)
+		: m_begin(first)
+		, m_end(last)
 	{
 	}
 
 	destroy_guard(const destroy_guard&) = delete;
 
 	destroy_guard(destroy_guard&& other) noexcept
-		: _begin(std::exchange(other._begin, nullptr))
-		, _end(std::exchange(other._end, nullptr))
+		: m_begin(std::exchange(other.m_begin, nullptr))
+		, m_end(std::exchange(other.m_end, nullptr))
 	{
 	}
 
 	~destroy_guard()
 	{
-		if (_begin)
+		if (m_begin)
 		{
-			std::destroy(_begin, _end);
+			std::destroy(m_begin, m_end);
 		}
 	}
 
@@ -106,13 +106,13 @@ public:
 	{
 		if (this != std::addressof(other))
 		{
-			if (_begin)
+			if (m_begin)
 			{
-				std::destroy(_begin, _end);
+				std::destroy(m_begin, m_end);
 			}
 
-			_begin = std::exchange(other._begin, nullptr);
-			_end = std::exchange(other._end, nullptr);
+			m_begin = std::exchange(other.m_begin, nullptr);
+			m_end = std::exchange(other.m_end, nullptr);
 		}
 
 		return *this;
@@ -120,28 +120,28 @@ public:
 
 	[[nodiscard]] T* begin() const noexcept
 	{
-		return _begin;
+		return m_begin;
 	}
 
 	[[nodiscard]] T* end() const noexcept
 	{
-		return _end;
+		return m_end;
 	}
 
-	void set_end(T* new_end) noexcept
+	void setm_end(T* newm_end) noexcept
 	{
-		_end = new_end;
+		m_end = newm_end;
 	}
 
 	void release() noexcept
 	{
-		_begin = nullptr;
-		_end = nullptr;
+		m_begin = nullptr;
+		m_end = nullptr;
 	}
 
 private:
-	T* _begin;
-	T* _end;
+	T* m_begin;
+	T* m_end;
 };
 
 } // namespace raw::detail
