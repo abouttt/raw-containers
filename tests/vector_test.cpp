@@ -7,6 +7,7 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -32,6 +33,7 @@ TEST(VectorTest, Constructors)
 	// Size constructor (value-initialization)
 	raw::vector<int> v2(5);
 	EXPECT_EQ(v2.size(), 5);
+	EXPECT_GE(v2.capacity(), v2.size());
 	for (int x : v2)
 	{
 		EXPECT_EQ(x, 0);
@@ -46,18 +48,24 @@ TEST(VectorTest, Constructors)
 	raw::vector<int> v4(src.begin(), src.end());
 	EXPECT_TRUE(equal(v4, { 1, 2, 3, 4 }));
 
-	// Initializer list constructor
-	raw::vector<int> v5 = { 5, 6, 7 };
-	EXPECT_TRUE(equal(v5, { 5, 6, 7 }));
+	// Range constructor (input iterator via stringstream)
+	std::istringstream iss("100 200 300");
+	std::istream_iterator<int> iit(iss), iend;
+	raw::vector<int> v5(iit, iend);
+	EXPECT_TRUE(equal(v5, { 100, 200, 300 }));
 
-	// Copy constructor
-	raw::vector<int> v6(v5);
+	// Initializer list constructor
+	raw::vector<int> v6 = { 5, 6, 7 };
 	EXPECT_TRUE(equal(v6, { 5, 6, 7 }));
 
-	// Move constructor
-	raw::vector<int> v7(std::move(v5));
+	// Copy constructor
+	raw::vector<int> v7(v6);
 	EXPECT_TRUE(equal(v7, { 5, 6, 7 }));
-	EXPECT_TRUE(v5.empty()); // moved-from is valid but unspecified
+
+	// Move constructor
+	raw::vector<int> v8(std::move(v7));
+	EXPECT_TRUE(equal(v8, { 5, 6, 7 }));
+	EXPECT_TRUE(v7.empty()); // moved-from vector is valid but unspecified; usually empty
 }
 
 TEST(VectorTest, Assignment)
@@ -340,4 +348,42 @@ TEST(VectorTest, NonMemberErase)
 	cnt = erase_if(v, [](int x) { return x % 2 == 0; });
 	EXPECT_EQ(cnt, 3);
 	EXPECT_TRUE(equal(v, { 1, 3, 5 }));
+}
+
+TEST(VectorTest, MoveOnly)
+{
+	struct MoveOnly
+	{
+		int val;
+
+		explicit MoveOnly(int v)
+			: val(v)
+		{
+		}
+
+		MoveOnly(MoveOnly&& o) noexcept
+			: val(o.val)
+		{
+			o.val = 0;
+		}
+
+		MoveOnly(const MoveOnly&) = delete;
+
+		bool operator==(const MoveOnly& rhs) const
+		{
+			return val == rhs.val;
+		}
+	};
+
+	raw::vector<MoveOnly> v;
+	v.emplace_back(1);
+	v.push_back(MoveOnly(2));
+	EXPECT_EQ(v.size(), 2);
+	EXPECT_EQ(v[0].val, 1);
+	EXPECT_EQ(v[1].val, 2);
+
+	// Move-only types should correctly reallocate and not leak
+	v.emplace_back(3);
+	EXPECT_EQ(v.size(), 3);
+	EXPECT_EQ(v[2].val, 3);
 }
