@@ -553,24 +553,22 @@ public:
 
 		iterator this_it = before_begin();
 		iterator other_it = other.before_begin();
+		iterator this_next = std::next(this_it);
+		iterator other_next = std::next(other_it);
 
-		while (this_it.m_ptr->next && other_it.m_ptr->next)
+		while (this_next != end() && other_next != other.end())
 		{
-			node* this_node = static_cast<node*>(this_it.m_ptr->next);
-			node* other_node = static_cast<node*>(other_it.m_ptr->next);
-
-			if (comp(other_node->value, this_node->value))
+			if (comp(*other_next, *this_next))
 			{
 				splice_after(this_it, other, other_it);
-				this_it.m_ptr = this_it.m_ptr->next;
+				other_next = std::next(other_it);
 			}
-			else
-			{
-				this_it.m_ptr = this_it.m_ptr->next;
-			}
+
+			++this_it;
+			this_next = std::next(this_it);
 		}
 
-		if (other_it.m_ptr->next)
+		if (other_next != other.end())
 		{
 			splice_after(this_it, other, other_it, other.end());
 		}
@@ -648,21 +646,22 @@ public:
 	size_type remove_if(UnaryPred p)
 	{
 		iterator it = before_begin();
+		iterator next = std::next(it);
 		size_type removed = 0;
 
-		while (it.m_ptr->next)
+		while (next != end())
 		{
-			node* next_node = static_cast<node*>(it.m_ptr->next);
-
-			if (p(next_node->value))
+			if (p(*next))
 			{
 				erase_after(it);
 				++removed;
 			}
 			else
 			{
-				it.m_ptr = it.m_ptr->next;
+				it = next;
 			}
+
+			next = std::next(it);
 		}
 
 		return removed;
@@ -698,22 +697,24 @@ public:
 		}
 
 		iterator it = before_begin();
+		iterator curr = std::next(it);
+		iterator next = std::next(curr);
 		size_type removed = 0;
 
-		while (it.m_ptr->next && it.m_ptr->next->next)
+		while (next != end())
 		{
-			node* curr_node = static_cast<node*>(it.m_ptr->next);
-			node* next_node = static_cast<node*>(it.m_ptr->next->next);
-
-			if (p(curr_node->value, next_node->value))
+			if (p(*curr, *next))
 			{
-				erase_after(iterator(it.m_ptr->next));
+				erase_after(curr);
 				++removed;
 			}
 			else
 			{
-				it.m_ptr = it.m_ptr->next;
+				it = curr;
+				curr = next;
 			}
+
+			next = std::next(curr);
 		}
 
 		return removed;
