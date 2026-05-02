@@ -967,11 +967,11 @@ private:
 	{
 		size_type destroyed = 0;
 
-		while (head && head != &m_sentinel)
+		while (head)
 		{
-			node* next = static_cast<node*>(head->next);
+			node_base* next = head->next;
 			destroy_node(head);
-			head = next;
+			head = next != &m_sentinel ? static_cast<node*>(next) : nullptr;
 			++destroyed;
 		}
 
