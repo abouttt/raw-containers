@@ -1,7 +1,8 @@
-#include "raw/dummy.h"
+#include "raw/detail/assert.h"
 
 int main()
 {
-	std::cout << "Hello, World!" << std::endl;
+	int a = 11;
+	RAW_ASSERT(a == 10, "a is not 10");
 	return 0;
 }
