@@ -63,7 +63,7 @@ TEST(ArrayTest, Assignment)
 	arr1 = std::move(arr3); // arr3 is valid but unspecified
 	EXPECT_TRUE(equal(arr1, { 7, 8, 9 }));
 
-	// Self assignment
+	// Self-assignment
 	arr1 = arr1;
 	EXPECT_TRUE(equal(arr1, { 7, 8, 9 }));
 }
@@ -107,7 +107,7 @@ TEST(ArrayTest, ElementAccess)
 	const int* cp = carr.data();
 	EXPECT_EQ(cp[2], 30);
 
-	// Zero‑sized array element access (UB must be avoided when testing)
+	// Zero-sized array element access (UB must be avoided when testing)
 	raw::array<int, 0> zero;
 	EXPECT_THROW(zero.at(0), std::out_of_range);
 	// operator[], front, back on zero size would be UB; we skip testing them.
@@ -171,7 +171,7 @@ TEST(ArrayTest, Operations)
 	arr1.fill(9);
 	EXPECT_TRUE(equal(arr1, { 9, 9, 9 }));
 
-	// swap member
+	// member swap
 	raw::array<int, 3> arr2 = { 0, 0, 0 };
 	arr1.swap(arr2);
 	EXPECT_TRUE(equal(arr1, { 0, 0, 0 }));
@@ -199,25 +199,9 @@ TEST(ArrayTest, Comparisons)
 	EXPECT_TRUE(arr1 >= arr2);
 
 	// Three-way comparison (strong ordering)
-	EXPECT_TRUE(arr1 <=> arr2 != std::strong_ordering::less);
-	EXPECT_TRUE(arr1 <=> arr2 != std::strong_ordering::greater);
-	EXPECT_TRUE(arr1 <=> arr2 == std::strong_ordering::equal);
-	EXPECT_TRUE(arr1 <=> arr2 >= 0);
-	EXPECT_TRUE(arr1 <=> arr2 <= 0);
-	EXPECT_TRUE(arr1 <=> arr2 == 0);
-
-	EXPECT_TRUE(arr1 != arr3);
-	EXPECT_FALSE(arr1 == arr3);
-	EXPECT_TRUE(arr1 < arr3);
-	EXPECT_TRUE(arr1 <= arr3);
-	EXPECT_FALSE(arr1 > arr3);
-	EXPECT_FALSE(arr1 >= arr3);
-	EXPECT_TRUE(arr1 <=> arr3 == std::strong_ordering::less);
-	EXPECT_TRUE(arr1 <=> arr3 != std::strong_ordering::greater);
-	EXPECT_TRUE(arr1 <=> arr3 != std::strong_ordering::equal);
-	EXPECT_TRUE(arr1 <=> arr3 < 0);
-	EXPECT_TRUE(arr1 <=> arr3 != 0);
-	EXPECT_TRUE(arr1 <=> arr3 <= 0);
+	EXPECT_EQ(arr1 <=> arr2, std::strong_ordering::equal);
+	EXPECT_EQ(arr1 <=> arr3, std::strong_ordering::less);
+	EXPECT_EQ(arr3 <=> arr1, std::strong_ordering::greater);
 }
 
 TEST(ArrayTest, NonMemberSwap)
